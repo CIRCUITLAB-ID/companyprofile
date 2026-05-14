@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CircuitLab — Design. Print. Build.</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+:root {
+  /* iOS palette */
+  --ios-bg:        #f2f2f7;
+  --ios-bg2:       #ffffff;
+  --ios-bg3:       #e5e5ea;
+  --ios-label:     #1c1c1e;
+  --ios-label2:    #3a3a3c;
+  --ios-label3:    #636366;
+  --ios-label4:    #8e8e93;
+  --ios-sep:       rgba(60,60,67,0.12);
+  --ios-sep2:      rgba(60,60,67,0.06);
+
+  /* iOS system blue / tint */
+  --ios-blue:      #007aff;
+  --ios-blue-l:    #4da3ff;
+  --ios-teal:      #32ade6;
+  --ios-indigo:    #5856d6;
+  --ios-cyan:      #55bef0;
+  --ios-green:     #34c759;
+  --ios-orange:    #ff9500;
+  --ios-pink:      #ff2d55;
+  --ios-purple:    #af52de;
+
+  /* Glass */
+  --glass:         rgba(255,255,255,0.72);
+  --glass-hover:   rgba(255,255,255,0.88);
+  --glass-border:  rgba(255,255,255,0.9);
+  --glass-shadow:  rgba(0,0,0,0.08);
+
+  /* Blur tokens */
+  --blur-sm:  blur(12px);
+  --blur-md:  blur(24px);
+  --blur-lg:  blur(40px);
+
+  /* Radii — iOS loves big radii */
+  --r-xs:  8px;
+  --r-sm:  12px;
+  --r-md:  18px;
+  --r-lg:  24px;
+  --r-xl:  32px;
+  --r-2xl: 44px;
+}
+
+body {
+  background: var(--ios-bg);
+  color: var(--ios-label);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════
+   WALLPAPER — iOS 17 style mesh gradient
+═══════════════════════════════════════════ */
+.wallpaper {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 15% -5%,  rgba(0,122,255,0.18)  0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 92%  8%,  rgba(175,82,222,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 65% 50% at 80%  95%, rgba(50,173,230,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 5%   85%, rgba(52,199,89,0.10)  0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 50%  50%, rgba(255,255,255,0.4) 0%, transparent 70%),
+    linear-gradient(160deg, #e8f0fe 0%, #f2f2f7 40%, #faf0ff 70%, #e8f5ff 100%);
+}
+
+/* subtle noise texture */
+.wallpaper::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION — iOS Dynamic Island / pill bar
+═══════════════════════════════════════════ */
+nav {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 200;
+  display: flex; align-items: center; gap: 0;
+  padding: 10px 16px 10px 20px;
+  background: var(--glass);
+  backdrop-filter: var(--blur-lg) saturate(180%);
+  -webkit-backdrop-filter: var(--blur-lg) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-2xl);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  width: calc(100% - 48px); max-width: 980px;
+}
+
+.nav-logo img {
+  height: 30px;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+}
+
+.nav-links {
+  display: flex; gap: 4px; list-style: none;
+  margin: 0 auto; padding: 0 24px;
+}
+
+.nav-links a {
+  color: var(--ios-label3); text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  padding: 7px 14px; border-radius: var(--r-sm);
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: -0.01em;
+}
+.nav-links a:hover {
+  background: rgba(0,0,0,0.06);
+  color: var(--ios-label);
+}
+
+.btn-nav {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ios-blue);
+  color: #fff !important; font-weight: 600 !important;
+  font-size: 13px; padding: 9px 18px; border-radius: var(--r-xl);
+  text-decoration: none; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,122,255,0.35);
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.btn-nav:hover { opacity: 0.9; transform: scale(0.98); box-shadow: 0 4px 16px rgba(0,122,255,0.45); }
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; gap: 48px;
+  padding: 120px 80px 80px;
+  max-width: 1200px; margin: 0 auto;
+}
+
+.hero-left { display: flex; flex-direction: column; }
+
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(0,122,255,0.1);
+  border: 1px solid rgba(0,122,255,0.2);
+  border-radius: var(--r-xl); padding: 6px 14px;
+  font-size: 12px; font-weight: 600; color: var(--ios-blue);
+  letter-spacing: 0.01em; width: fit-content;
+  margin-bottom: 24px;
+  animation: fadeUp 0.5s ease both;
+}
+.pill-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ios-blue);
+  animation: pillPulse 2s infinite;
+}
+@keyframes pillPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
+.hero h1 {
+  font-size: clamp(52px, 6vw, 88px);
+  font-weight: 800; line-height: 1.03;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+  animation: fadeUp 0.5s 0.08s ease both;
+  color: var(--ios-label);
+}
+
+.hero h1 .grad {
+  background: linear-gradient(135deg, var(--ios-blue) 0%, var(--ios-indigo) 50%, var(--ios-purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.hero-sub {
+  font-size: 17px; color: var(--ios-label3); line-height: 1.65;
+  font-weight: 400; margin-bottom: 36px; max-width: 420px;
+  animation: fadeUp 0.5s 0.14s ease both;
+  letter-spacing: -0.01em;
+}
+
+.hero-btns {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  animation: fadeUp 0.5s 0.2s ease both;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--ios-blue); color: #fff;
+  font-weight: 600; font-size: 16px; letter-spacing: -0.01em;
+  padding: 14px 26px; border-radius: var(--r-xl);
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgba(0,122,255,0.38);
+  transition: opacity .15s, transform .15s, box-shadow .15s;
+}
+.btn-primary:hover { opacity: .92; transform: scale(.985); box-shadow: 0 6px 26px rgba(0,122,255,0.5); }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--glass); color: var(--ios-blue);
+  font-weight: 600; font-size: 16px; letter-spacing: -0.01em;
+  padding: 14px 26px; border-radius: var(--r-xl);
+  text-decoration: none;
+  border: 1px solid rgba(0,122,255,0.2);
+  backdrop-filter: var(--blur-sm);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: background .15s, box-shadow .15s, transform .15s;
+}
+.btn-secondary:hover { background: var(--glass-hover); transform: scale(.985); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════════════════════════════════════════
+   HERO RIGHT — IMAGE FRAME
+═══════════════════════════════════════════ */
+.hero-right {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.hero-frame-wrap { position: relative; width: 100%; max-width: 480px; }
+
+.hero-frame {
+  width: 100%; aspect-ratio: 4/3;
+  border-radius: var(--r-xl); overflow: hidden; position: relative; cursor: pointer;
+  background: linear-gradient(145deg, #dce8ff, #edf2ff, #f0e8ff);
+  border: 1px solid rgba(255,255,255,0.95);
+  box-shadow:
+    0 32px 80px rgba(0,0,0,0.13),
+    0 8px 24px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,1);
+  transition: transform .3s, box-shadow .3s;
+}
+.hero-frame:hover { transform: scale(1.01) translateY(-3px); box-shadow: 0 44px 100px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,1); }
+
+/* PCB art placeholder */
+.hero-placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  transition: opacity .3s;
+}
+.hero-placeholder svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero-placeholder-icon { position: relative; z-index: 2; font-size: 52px; }
+.hero-upload-hint {
+  position: relative; z-index: 2;
+  font-size: 12px; font-weight: 500; color: var(--ios-blue);
+  background: rgba(0,122,255,0.1); border: 1px solid rgba(0,122,255,0.2);
+  padding: 6px 14px; border-radius: var(--r-sm);
+  letter-spacing: -0.01em;
+}
+
+#heroPreviewImg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: none;
+}
+
+/* glass inset at top */
+.hero-frame::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 35%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+  border-radius: var(--r-xl) var(--r-xl) 0 0; pointer-events: none; z-index: 3;
+}
+
+/* Floating iOS-style cards */
+.float-card {
+  position: absolute;
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; border-radius: var(--r-md);
+  background: var(--glass);
+  backdrop-filter: var(--blur-md) saturate(160%);
+  -webkit-backdrop-filter: var(--blur-md) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1);
+  white-space: nowrap;
+}
+.fc-a { bottom: -18px; left: -28px; animation: floatA 4s ease-in-out infinite; }
+.fc-b { top: -18px;    right:-22px; animation: floatB 5s ease-in-out infinite; }
+.fc-c { top: 42%;      right:-44px; transform: translateY(-50%); animation: floatA 5.5s ease-in-out infinite reverse; }
+@keyframes floatA { 0%,100%{transform:translateY(0)}   50%{transform:translateY(-7px)} }
+@keyframes floatB { 0%,100%{transform:translateY(0)}   50%{transform:translateY(6px)} }
+.fc-c { animation-name: floatC; }
+@keyframes floatC { 0%,100%{transform:translateY(-50%)} 50%{transform:translateY(calc(-50% - 7px))} }
+
+.fc-icon {
+  width: 36px; height: 36px; border-radius: var(--r-sm); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.fc-a .fc-icon { background: linear-gradient(135deg,#FFD60A,#FF9500); }
+.fc-b .fc-icon { background: linear-gradient(135deg,#30D158,#34C759); }
+.fc-c .fc-icon { background: linear-gradient(135deg,#007AFF,#5856D6); }
+
+.fc-info { display: flex; flex-direction: column; }
+.fc-title { font-size: 13px; font-weight: 600; color: var(--ios-label); letter-spacing: -0.01em; }
+.fc-sub   { font-size: 11px; font-weight: 500; color: var(--ios-label4); margin-top: 1px; }
+
+/* ═══════════════════════════════════════════
+   STATS — iOS grouped list style
+═══════════════════════════════════════════ */
+.stats-section {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 80px 90px;
+}
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
+}
+
+.stat-card {
+  background: var(--glass);
+  backdrop-filter: var(--blur-md) saturate(180%);
+  -webkit-backdrop-filter: var(--blur-md) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-radius: var(--r-lg); padding: 28px 22px; text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,1);
+  transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.1); }
+
+.stat-num {
+  font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--ios-blue), var(--ios-indigo));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-lbl { font-size: 13px; font-weight: 500; color: var(--ios-label4); margin-top: 5px; }
+
+/* ═══════════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════════ */
+.section {
+  position: relative; z-index: 1;
+  padding: 0 80px 90px; max-width: 1200px; margin: 0 auto;
+}
+
+.sec-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--ios-blue); text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.sec-title {
+  font-size: clamp(34px, 4vw, 56px); font-weight: 800;
+  letter-spacing: -0.04em; line-height: 1.05;
+  color: var(--ios-label); margin-bottom: 14px;
+}
+
+.sec-desc {
+  font-size: 16px; color: var(--ios-label3); line-height: 1.7;
+  max-width: 460px; margin-bottom: 48px; font-weight: 400; letter-spacing: -0.01em;
+}
+
+/* ═══════════════════════════════════════════
+   SERVICE CARDS — iOS app-card style
+═══════════════════════════════════════════ */
+.svc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+
+.svc-card {
+  background: var(--glass);
+  backdrop-filter: var(--blur-md) saturate(160%);
+  -webkit-backdrop-filter: var(--blur-md) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-radius: var(--r-xl); padding: 28px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,1);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
+  cursor: default; position: relative; overflow: hidden;
+}
+
+.svc-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(0,122,255,.04) 0%, transparent 60%);
+  border-radius: inherit; pointer-events: none;
+}
+
+.svc-card:hover {
+  transform: translateY(-5px) scale(1.005);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1);
+}
+
+.svc-icon {
+  width: 52px; height: 52px; border-radius: 14px; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+/* different iOS icon gradients per card */
+.svc-icon-1 { background: linear-gradient(135deg,#007AFF,#32ADE6); }
+.svc-icon-2 { background: linear-gradient(135deg,#FF9500,#FFCC02); }
+.svc-icon-3 { background: linear-gradient(135deg,#AF52DE,#FF2D55); }
+.svc-icon-4 { background: linear-gradient(135deg,#34C759,#30D158); }
+.svc-icon-5 { background: linear-gradient(135deg,#5856D6,#007AFF); }
+.svc-icon-6 { background: linear-gradient(135deg,#FF2D55,#FF6B35); }
+
+.svc-card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; color: var(--ios-label); }
+.svc-card p  { font-size: 14px; color: var(--ios-label3); line-height: 1.65; font-weight: 400; }
+
+.svc-tag {
+  display: inline-block; margin-top: 16px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+  color: var(--ios-blue);
+  background: rgba(0,122,255,0.1); border-radius: var(--r-xs);
+  padding: 4px 9px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════
+   PORTFOLIO
+═══════════════════════════════════════════ */
+.pf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+
+.pf-card {
+  background: var(--glass);
+  backdrop-filter: var(--blur-md) saturate(160%);
+  -webkit-backdrop-filter: var(--blur-md) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-radius: var(--r-xl); overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,1);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
+}
+.pf-card:hover { transform: translateY(-6px); box-shadow: 0 22px 55px rgba(0,0,0,0.12); }
+
+.pf-thumb {
+  height: 185px; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.pf-t1 { background: linear-gradient(145deg,#dce8ff,#c5d8ff,#d6e4ff); }
+.pf-t2 { background: linear-gradient(145deg,#d4f5e2,#b8edcc,#c8f0d8); }
+.pf-t3 { background: linear-gradient(145deg,#eedcff,#e0c5ff,#e8d0ff); }
+.pf-thumb::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,.25) 0%, transparent 50%, rgba(0,0,0,.04) 100%);
+}
+.pf-emoji { font-size: 56px; position: relative; z-index: 1; filter: drop-shadow(0 4px 12px rgba(0,0,0,.1)); }
+
+.pf-thumb svg { position: absolute; inset: 0; opacity: .1; }
+
+/* upload inside portfolio card */
+.pf-thumb .pf-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+.pf-upload-btn {
+  position:absolute; bottom:10px; right:10px; z-index:4;
+  font-size:11px; font-weight:600;
+  background:rgba(0,122,255,0.14); border:1px solid rgba(0,122,255,0.25);
+  color:var(--ios-blue); padding:5px 12px; border-radius:var(--r-sm); cursor:pointer;
+  backdrop-filter:blur(8px); transition:background .15s;
+  letter-spacing:-0.01em;
+}
+.pf-upload-btn:hover { background:rgba(0,122,255,0.25); }
+
+.pf-body { padding: 20px 22px 6px; }
+.pf-cat  { font-size: 11px; font-weight: 700; color: var(--ios-blue); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 5px; }
+.pf-card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; color: var(--ios-label); }
+.pf-card p  { font-size: 13px; color: var(--ios-label3); line-height: 1.6; }
+
+.pf-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 22px;
+  border-top: 1px solid var(--ios-sep);
+}
+.pf-foot span { font-size: 11px; font-weight: 500; color: var(--ios-label4); font-family: 'IBM Plex Mono', monospace; }
+.pf-link { color: var(--ios-blue); font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 3px; letter-spacing: -0.01em; transition: opacity .15s; }
+.pf-link:hover { opacity: .75; }
+
+/* ═══════════════════════════════════════════
+   CONSULT BANNER
+═══════════════════════════════════════════ */
+.consult-wrap {
+  padding: 0 80px 90px; max-width: 1200px; margin: 0 auto;
+  position: relative; z-index: 1;
+}
+
+.consult-card {
+  border-radius: var(--r-xl); padding: 52px 56px;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--ios-blue) 0%, var(--ios-indigo) 60%, var(--ios-purple) 100%);
+  box-shadow: 0 20px 60px rgba(0,122,255,0.3), 0 4px 16px rgba(0,0,0,0.1);
+  position: relative; overflow: hidden;
+}
+
+/* glass sheen */
+.consult-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,.18), transparent);
+  border-radius: inherit; pointer-events: none;
+}
+.consult-card::after {
+  content: '';
+  position: absolute; top: -80px; right: -60px;
+  width: 280px; height: 280px; border-radius: 50%;
+  background: rgba(255,255,255,.08); pointer-events: none;
+}
+
+.cb-text h3 { font-size: 34px; font-weight: 800; letter-spacing: -0.04em; color: #fff; margin-bottom: 8px; }
+.cb-text p  { font-size: 15px; color: rgba(255,255,255,.8); font-weight: 400; }
+
+.free-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  background: rgba(255,255,255,.2); color: #fff;
+  border: 1px solid rgba(255,255,255,.35); border-radius: 100px;
+  padding: 4px 12px; margin-left: 10px; vertical-align: middle;
+}
+
+.btn-white {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff; color: var(--ios-blue);
+  font-weight: 700; font-size: 15px; letter-spacing: -0.01em;
+  padding: 14px 28px; border-radius: var(--r-xl);
+  text-decoration: none; white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transition: opacity .15s, transform .15s, box-shadow .15s;
+}
+.btn-white:hover { opacity: .94; transform: scale(.98); box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+
+/* ═══════════════════════════════════════════
+   SOCIAL LINKS — iOS list style
+═══════════════════════════════════════════ */
+.links-section { padding: 0 80px 90px; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+.links-section .sec-desc { margin: 0 auto 40px; }
+.links-center { max-width: 480px; margin: 0 auto; }
+
+.links-group {
+  background: var(--glass);
+  backdrop-filter: var(--blur-md) saturate(180%);
+  -webkit-backdrop-filter: var(--blur-md) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-radius: var(--r-xl);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,1);
+  overflow: hidden;
+}
+
+.lk {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; text-decoration: none; color: var(--ios-label);
+  border-bottom: 1px solid var(--ios-sep);
+  transition: background .12s;
+  position: relative;
+}
+.lk:last-child { border-bottom: none; }
+.lk:hover { background: rgba(0,0,0,0.03); }
+
+.lk-ico {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.lk-wa .lk-ico  { background: linear-gradient(145deg,#25D366,#1dba57); }
+.lk-ig .lk-ico  { background: linear-gradient(145deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
+.lk-tt .lk-ico  { background: linear-gradient(145deg,#2b2b2b,#1a1a1a); }
+.lk-xx .lk-ico  { background: linear-gradient(145deg,#1a1a1a,#000); }
+
+.lk-info { flex: 1; }
+.lk-name   { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; color: var(--ios-label); }
+.lk-handle { font-size: 12px; color: var(--ios-label4); margin-top: 1px; font-weight: 400; }
+
+.lk-chevron {
+  color: var(--ios-label4); font-size: 16px; font-weight: 300;
+  transition: transform .15s;
+}
+.lk:hover .lk-chevron { transform: translateX(3px); }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  position: relative; z-index: 1;
+  text-align: center; padding: 40px 80px 48px;
+  border-top: 1px solid var(--ios-sep);
+}
+.foot-logo {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.04em;
+  color: var(--ios-label); margin-bottom: 6px;
+}
+.foot-logo span { color: var(--ios-blue); }
+footer p { font-size: 13px; color: var(--ios-label4); }
+
+/* ═══════════════════════════════════════════
+   REVEAL
+═══════════════════════════════════════════ */
+.reveal { opacity:0; transform:translateY(20px); transition:opacity .5s ease, transform .5s ease; }
+.reveal.vis { opacity:1; transform:translateY(0); }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:960px){
+  nav { width:calc(100% - 32px); padding:10px 14px 10px 16px; }
+  .nav-links { display:none; }
+  .hero { grid-template-columns:1fr; padding:110px 24px 60px; text-align:center; }
+  .hero-left { align-items:center; }
+  .hero-sub { max-width:100%; }
+  .fc-a,.fc-b,.fc-c { display:none; }
+  .stats-section,.section,.consult-wrap,.links-section { padding-left:24px; padding-right:24px; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .svc-grid { grid-template-columns:repeat(2,1fr); }
+  .pf-grid { grid-template-columns:1fr; }
+  .consult-card { padding:36px 28px; flex-direction:column; text-align:center; }
+  footer { padding:36px 24px; }
+}
+@media(max-width:560px){
+  .svc-grid { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+</style>
+</head>
+<body>
+
+<!-- WALLPAPER -->
+<div class="wallpaper"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="side profile trans.png">
+  </div>
+  <ul class="nav-links">
+    <li><a href="#layanan">Layanan</a></li>
+    <li><a href="#portofolio">Portofolio</a></li>
+    <li><a href="#kontak">Kontak</a></li>
+  </ul>
+  <a href="https://wa.me/6288983377098" class="btn-nav">💬 Konsultasi Gratis</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-pill">
+      <span class="pill-dot"></span>
+      PCB · 3D Design · Indonesia
+    </div>
+    <h1>Wujudkan<br><span class="grad">Elektronik</span><br>Kamu</h1>
+    <p class="hero-sub">Desain PCB profesional, cetak satuan, casing 3D custom — dari prototipe hingga produk jadi. Pengiriman ke seluruh Indonesia.</p>
+    <div class="hero-btns">
+      <a href="https://wa.me/6288983377098" class="btn-primary">💬 Konsultasi Gratis</a>
+      <a href="#portofolio" class="btn-secondary">Lihat Portofolio →</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-frame-wrap">
+
+      <div class="hero-frame" onclick="document.getElementById('heroFile').click()">
+        <!-- placeholder PCB art -->
+        <div class="hero-placeholder" id="heroPlaceholder">
+          <svg viewBox="0 0 480 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="pr1" cx="50%" cy="50%" r="55%">
+                <stop offset="0%" stop-color="#007aff" stop-opacity=".1"/>
+                <stop offset="100%" stop-color="#007aff" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="480" height="360" fill="url(#pr1)"/>
+            <g stroke="#007aff" stroke-opacity=".3" stroke-width="1.5" fill="none">
+              <polyline points="40,118 118,118 138,98 200,98 220,118 302,118"/>
+              <polyline points="180,242 260,242 282,262 362,262 382,242 444,242"/>
+              <polyline points="36,198 78,198 98,178 180,178"/>
+              <polyline points="300,178 382,178 402,158 460,158"/>
+              <line x1="118" y1="78" x2="118" y2="158"/>
+              <line x1="200" y1="58" x2="200" y2="138"/>
+              <line x1="302" y1="118" x2="302" y2="198"/>
+              <line x1="382" y1="178" x2="382" y2="262"/>
+            </g>
+            <g fill="none" stroke="#007aff" stroke-opacity=".4" stroke-width="1.4">
+              <circle cx="118" cy="118" r="5"/><circle cx="200" cy="98" r="5"/>
+              <circle cx="302" cy="118" r="5"/><circle cx="262" cy="242" r="5"/>
+              <circle cx="382" cy="262" r="5"/>
+            </g>
+            <rect x="188" y="148" width="104" height="64" rx="8" fill="rgba(0,122,255,.08)" stroke="#007aff" stroke-opacity=".4" stroke-width="1.5"/>
+            <g stroke="#007aff" stroke-opacity=".3" stroke-width="1">
+              <line x1="188" y1="162" x2="174" y2="162"/><line x1="188" y1="172" x2="174" y2="172"/><line x1="188" y1="182" x2="174" y2="182"/><line x1="188" y1="192" x2="174" y2="192"/>
+              <line x1="292" y1="162" x2="306" y2="162"/><line x1="292" y1="172" x2="306" y2="172"/><line x1="292" y1="182" x2="306" y2="182"/><line x1="292" y1="192" x2="306" y2="192"/>
+              <line x1="210" y1="148" x2="210" y2="134"/><line x1="225" y1="148" x2="225" y2="134"/><line x1="240" y1="148" x2="240" y2="134"/><line x1="258" y1="148" x2="258" y2="134"/><line x1="272" y1="148" x2="272" y2="134"/>
+              <line x1="210" y1="212" x2="210" y2="226"/><line x1="225" y1="212" x2="225" y2="226"/><line x1="240" y1="212" x2="240" y2="226"/><line x1="258" y1="212" x2="258" y2="226"/><line x1="272" y1="212" x2="272" y2="226"/>
+            </g>
+            <rect x="200" y="158" width="80" height="44" rx="5" fill="rgba(0,122,255,.06)" stroke="#007aff" stroke-opacity=".25" stroke-width=".8"/>
+            <text x="240" y="184" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#007aff" fill-opacity=".5">MCU</text>
+            <g stroke="#5856d6" stroke-opacity=".2" stroke-width="1" fill="none">
+              <polyline points="20,20 20,38 38,38"/><polyline points="462,20 444,20 444,38"/>
+              <polyline points="20,342 20,324 38,324"/><polyline points="462,342 444,342 444,324"/>
+            </g>
+            <g fill="rgba(0,122,255,.12)" stroke="#007aff" stroke-opacity=".28" stroke-width="1">
+              <rect x="56" y="108" width="18" height="8" rx="3"/>
+              <rect x="406" y="148" width="18" height="8" rx="3"/>
+              <rect x="56" y="228" width="18" height="8" rx="3"/>
+            </g>
+          </svg>
+          <div class="hero-placeholder-icon">🔌</div>
+          <div class="hero-upload-hint">📎 Upload foto project kamu</div>
+        </div>
+        <img id="heroPreviewImg" src="" alt="Project">
+        <input type="file" id="heroFile" accept="image/*" style="display:none">
+      </div>
+
+      <!-- floating cards -->
+      <div class="float-card fc-a">
+        <div class="fc-icon">⚡</div>
+        <div class="fc-info">
+          <span class="fc-title">PCB Satuan</span>
+          <span class="fc-sub">Min. 1 pcs</span>
+        </div>
+      </div>
+      <div class="float-card fc-b">
+        <div class="fc-icon">🚀</div>
+        <div class="fc-info">
+          <span class="fc-title">Fast Delivery</span>
+          <span class="fc-sub">Se-Indonesia</span>
+        </div>
+      </div>
+      <div class="float-card fc-c">
+        <div class="fc-icon">📦</div>
+        <div class="fc-info">
+          <span class="fc-title">3D Casing</span>
+          <span class="fc-sub">Custom design</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-card reveal"><div class="stat-num">50+</div><div class="stat-lbl">Project Selesai</div></div>
+    <div class="stat-card reveal"><div class="stat-num">1x</div><div class="stat-lbl">Cetak Satuan</div></div>
+    <div class="stat-card reveal"><div class="stat-num">3D</div><div class="stat-lbl">Casing Custom</div></div>
+    <div class="stat-card reveal"><div class="stat-num">Free</div><div class="stat-lbl">Konsultasi</div></div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="section" id="layanan">
+  <div class="sec-eyebrow">Layanan Kami</div>
+  <h2 class="sec-title">Semua yang Kamu<br>Butuhkan</h2>
+  <p class="sec-desc">Dari desain skematik sampai produk jadi — kami handle semuanya dengan standar profesional.</p>
+  <div class="svc-grid">
+    <div class="svc-card reveal">
+      <div class="svc-icon svc-icon-1">🔌</div>
+      <h3>Desain PCB</h3>
+      <p>Schematic & layout PCB profesional menggunakan KiCad / Altium. Siap kirim ke pabrik atau cetak satuan.</p>
+      <span class="svc-tag">SCHEMATIC · LAYOUT · GERBER</span>
+    </div>
+    <div class="svc-card reveal">
+      <div class="svc-icon svc-icon-2">🖨️</div>
+      <h3>Cetak PCB Satuan</h3>
+      <p>Cetak PCB mulai 1 lembar, cocok untuk prototipe dan tugas akhir. Pengiriman ke seluruh Indonesia.</p>
+      <span class="svc-tag">MIN. 1 PCS · FAST DELIVERY</span>
+    </div>
+    <div class="svc-card reveal">
+      <div class="svc-icon svc-icon-3">📦</div>
+      <h3>Desain Casing 3D</h3>
+      <p>Modeling casing custom untuk PCB dan project elektronikmu. Export STL siap cetak 3D printer.</p>
+      <span class="svc-tag">3D MODELING · STL · FUSION360</span>
+    </div>
+    <div class="svc-card reveal">
+      <div class="svc-icon svc-icon-4">🎓</div>
+      <h3>Tugas Akhir / Skripsi</h3>
+      <p>Bantu realisasi hardware tugas akhir mahasiswa — dari konsep, desain, hingga PCB jadi.</p>
+      <span class="svc-tag">TA · SKRIPSI · PROYEK</span>
+    </div>
+    <div class="svc-card reveal">
+      <div class="svc-icon svc-icon-5">💡</div>
+      <h3>Konsultasi Gratis</h3>
+      <p>Tidak tahu harus mulai dari mana? Chat langsung via WhatsApp tanpa biaya apapun.</p>
+      <span class="svc-tag">FREE · NO HIDDEN COST</span>
+    </div>
+    <div class="svc-card reveal">
+      <div class="svc-icon svc-icon-6">🚀</div>
+      <h3>Prototipe Cepat</h3>
+      <p>Butuh PCB dalam waktu singkat? Layanan fast-track tersedia untuk kebutuhan mendesak.</p>
+      <span class="svc-tag">FAST TRACK · PRIORITAS</span>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="section" id="portofolio">
+  <div class="sec-eyebrow">Portofolio</div>
+  <h2 class="sec-title">Hasil Kerja Kami</h2>
+  <p class="sec-desc">Beberapa project yang telah kami kerjakan untuk klien dan mahasiswa di seluruh Indonesia.</p>
+  <div class="pf-grid">
+
+    <div class="pf-card reveal">
+      <div class="pf-thumb pf-t1">
+        <svg viewBox="0 0 320 185"><polyline points="0,80 60,80 80,60 140,60 160,80 200,80 220,60 320,60" stroke="#007aff" stroke-width="1" fill="none"/><polyline points="0,130 80,130 100,110 180,110 200,130 320,130" stroke="#5856d6" stroke-width=".8" fill="none"/><circle cx="80" cy="80" r="4" fill="none" stroke="#007aff" stroke-width="1"/><circle cx="200" cy="80" r="4" fill="none" stroke="#007aff" stroke-width="1"/></svg>
+        <div class="pf-emoji">⚡</div>
+        <img class="pf-img" id="pf1img" src="" alt="">
+        <label class="pf-upload-btn" for="pf1file" onclick="event.stopPropagation()">📎 Upload</label>
+        <input type="file" id="pf1file" accept="image/*" style="display:none" onchange="pfPreview(this,'pf1img')">
+      </div>
+      <div class="pf-body"><div class="pf-cat">PCB Design · IoT</div><h3>Smart Home Controller</h3><p>PCB multi-layer untuk otomatisasi rumah berbasis ESP32 dengan relay 8 channel.</p></div>
+      <div class="pf-foot"><span>4-layer · 10×10cm</span><a href="https://wa.me/6288983377098" class="pf-link">Order Serupa ›</a></div>
+    </div>
+
+    <div class="pf-card reveal">
+      <div class="pf-thumb pf-t2">
+        <svg viewBox="0 0 320 185"><polyline points="20,60 80,60 100,80 200,80 220,60 300,60" stroke="#34c759" stroke-width="1" fill="none"/><polyline points="0,130 60,130 80,150 160,150 180,130 320,130" stroke="#007aff" stroke-width=".8" fill="none"/><rect x="140" y="70" width="40" height="26" rx="4" fill="none" stroke="#34c759" stroke-opacity=".5" stroke-width="1"/></svg>
+        <div class="pf-emoji">🤖</div>
+        <img class="pf-img" id="pf2img" src="" alt="">
+        <label class="pf-upload-btn" for="pf2file" onclick="event.stopPropagation()">📎 Upload</label>
+        <input type="file" id="pf2file" accept="image/*" style="display:none" onchange="pfPreview(this,'pf2img')">
+      </div>
+      <div class="pf-body"><div class="pf-cat">3D Casing · Tugas Akhir</div><h3>Casing Robot Line Follower</h3><p>Desain casing 3D custom untuk robot TA mahasiswa, termasuk mount sensor & PCB.</p></div>
+      <div class="pf-foot"><span>3D Print Ready · STL</span><a href="https://wa.me/6288983377098" class="pf-link">Order Serupa ›</a></div>
+    </div>
+
+    <div class="pf-card reveal">
+      <div class="pf-thumb pf-t3">
+        <svg viewBox="0 0 320 185"><polyline points="0,90 50,90 70,70 150,70 170,90 240,90 260,70 320,70" stroke="#af52de" stroke-width="1" fill="none"/><polyline points="0,140 70,140 90,160 200,160 220,140 320,140" stroke="#5856d6" stroke-width=".8" fill="none"/><circle cx="70" cy="90" r="4" fill="none" stroke="#af52de" stroke-width="1"/></svg>
+        <div class="pf-emoji">📡</div>
+        <img class="pf-img" id="pf3img" src="" alt="">
+        <label class="pf-upload-btn" for="pf3file" onclick="event.stopPropagation()">📎 Upload</label>
+        <input type="file" id="pf3file" accept="image/*" style="display:none" onchange="pfPreview(this,'pf3img')">
+      </div>
+      <div class="pf-body"><div class="pf-cat">PCB · Wireless</div><h3>LoRa Sensor Node</h3><p>PCB compact untuk sensor node LoRaWAN dengan battery management, monitoring lapangan.</p></div>
+      <div class="pf-foot"><span>2-layer · 5×7cm</span><a href="https://wa.me/6288983377098" class="pf-link">Order Serupa ›</a></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONSULT BANNER -->
+<div class="consult-wrap">
+  <div class="consult-card reveal">
+    <div class="cb-text">
+      <h3>Konsultasi Gratis <span class="free-badge">FREE</span></h3>
+      <p>Ceritakan project kamu — kami bantu analisis kebutuhan tanpa biaya apapun.</p>
+    </div>
+    <a href="https://wa.me/6288983377098" class="btn-white">💬 Chat WhatsApp</a>
+  </div>
+</div>
+
+<!-- LINKS -->
+<section class="links-section" id="kontak">
+  <div class="sec-eyebrow" style="text-align:center">Temukan Kami</div>
+  <h2 class="sec-title" style="text-align:center">Hubungi & Ikuti<br>CircuitLab</h2>
+  <p class="sec-desc" style="text-align:center;max-width:400px;margin:0 auto 40px">Terhubung di berbagai platform — konsultasi, update project, dan konten edukasi elektronik.</p>
+
+  <div class="links-center">
+    <div class="links-group reveal">
+
+      <a href="https://wa.me/6288983377098" class="lk lk-wa" target="_blank">
+        <div class="lk-ico"><svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
+        <div class="lk-info"><div class="lk-name">WhatsApp</div><div class="lk-handle">+62 889-8337-7098 · Konsultasi & Order</div></div>
+        <div class="lk-chevron">›</div>
+      </a>
+
+      <a href="https://instagram.com/circuitlab.id" class="lk lk-ig" target="_blank">
+        <div class="lk-ico"><svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+        <div class="lk-info"><div class="lk-name">Instagram</div><div class="lk-handle">@circuitlab.id · Portfolio & Update</div></div>
+        <div class="lk-chevron">›</div>
+      </a>
+
+      <a href="https://tiktok.com/@circuitlab.id" class="lk lk-tt" target="_blank">
+        <div class="lk-ico"><svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.83 1.54V6.78a4.84 4.84 0 01-1.06-.09z"/></svg></div>
+        <div class="lk-info"><div class="lk-name">TikTok</div><div class="lk-handle">@circuitlab.id · Konten Edukasi PCB</div></div>
+        <div class="lk-chevron">›</div>
+      </a>
+
+      <a href="https://x.com/circuitlab_id" class="lk lk-xx" target="_blank">
+        <div class="lk-ico"><svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+        <div class="lk-info"><div class="lk-name">X (Twitter)</div><div class="lk-handle">@circuitlab.id · Tech Updates</div></div>
+        <div class="lk-chevron">›</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">Circuit<span>Lab</span></div>
+  <p>Design. Print. Build. · Indonesia 🇮🇩</p>
+  <p style="margin-top:5px;font-size:12px;opacity:.5;">© 2025 CircuitLab. All rights reserved.</p>
+</footer>
+
+<script>
+// scroll reveal
+const obs = new IntersectionObserver(e => e.forEach(x => {
+  if(x.isIntersecting) x.target.classList.add('vis');
+}), {threshold:.07});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// hero image
+document.getElementById('heroFile').addEventListener('change', function(){
+  if(!this.files[0]) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    document.getElementById('heroPreviewImg').src = ev.target.result;
+    document.getElementById('heroPreviewImg').style.display = 'block';
+    document.getElementById('heroPlaceholder').style.display = 'none';
+  };
+  r.readAsDataURL(this.files[0]);
+});
+
+// portfolio previews
+function pfPreview(input, imgId){
+  if(!input.files[0]) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const img = document.getElementById(imgId);
+    img.src = ev.target.result; img.style.display = 'block';
+    const thumb = img.closest('.pf-thumb');
+    thumb.querySelector('.pf-emoji').style.display = 'none';
+    thumb.querySelector('svg').style.display = 'none';
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+// iOS-style spring on cards
+document.querySelectorAll('.svc-card, .pf-card, .stat-card').forEach(card => {
+  card.addEventListener('mousedown', () => { card.style.transform = 'scale(0.97)'; });
+  card.addEventListener('mouseup',   () => { card.style.transform = ''; });
+  card.addEventListener('mouseleave',() => { card.style.transform = ''; });
+});
+</script>
+</body>
+</html>
